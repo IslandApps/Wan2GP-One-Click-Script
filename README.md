@@ -16,6 +16,14 @@ A one-click, fully automated script for installing [Wan2GP](https://github.com/d
 
 ---
 
+## Requirements
+
+- Windows 10/11 (64-bit)
+- NVIDIA GPU with CUDA support (GTX 600 series or newer recommended)
+- Internet connection
+
+---
+
 ## Quick Start
 
 1. Download the `Wan2GP_OneClick_Installer.bat` file from this repository.
@@ -29,14 +37,6 @@ A one-click, fully automated script for installing [Wan2GP](https://github.com/d
    - Launch Wan2GP in your browser at [http://localhost:7860](http://localhost:7860)
 
 To relaunch Wan2GP later, run the installer again. It will skip completed installation steps if already set up.
-
----
-
-## Requirements
-
-- Windows 10/11 (64-bit)
-- NVIDIA GPU with CUDA support (GTX 600 series or newer recommended)
-- Internet connection
 
 ---
 
