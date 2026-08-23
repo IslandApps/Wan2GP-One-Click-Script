@@ -108,5 +108,5 @@ $MinFreeGB = 100           # Change minimum disk space check
 
 ## 📄 License & Credits
 
-* **Installer:** Released under the [MIT License](https://www.google.com/search?q=LICENSE).
+* **Installer:** Released under the [MIT License](https://github.com/TechMitten/Wan2GP-One-Click-Script/blob/main/LICENSE).
 * **Core Application:** See the original [Wan2GP Repository](https://github.com/deepbeepmeep/Wan2GP) for upstream model licenses and codebase documentation.
