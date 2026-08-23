@@ -2,70 +2,55 @@
 
 A one-click, fully automated script for installing [Wan2GP](https://github.com/deepbeepmeep/Wan2GP), an open-source text-to-video and Lora generation suite for NVIDIA GPUs. Wan2GP is built for the NVIDIA CUDA ecosystem and runs entirely locally on your graphics card.
 
-> **Heads up:** Choose **v2** for new installations. It's a complete rewrite with better reliability and user experience.
-
 ---
 
-## Version Comparison: v1 vs v2
+## About v2: A Complete Rewrite
 
-### v2 (Recommended) ⭐
+If you're reading this for the first time, **use v2.** It's a ground-up rewrite that fixes years of edge cases in the original batch-only approach.
 
-**A complete rewrite as a polyglot batch/PowerShell hybrid.**
+### What Was Wrong with v1?
 
-#### What's Improved
+The original installer was pure batch script — clever, but fragile. Batch is designed for simple system tasks, not complex dependency orchestration. Here's what kept breaking:
 
-| Feature | v1 | v2 |
-|---------|----|----|
-| **Language** | Pure Batch | Batch launcher + PowerShell engine |
-| **Reliability** | Fragile PATH and activation workarounds | Solid, no activation state guessing |
-| **Error Handling** | Broad catch-all fallbacks | Specific diagnostics and targeted fixes |
-| **User Feedback** | Minimal (freezes without `SageAttention 2`) | Live pip progress with ETA and % complete |
-| **Triton Detection** | Brittle AttrsDescriptor check | Removed (no longer needed in Triton 3.1+) |
-| **PyTorch Versions** | Hardcoded for specific GPUs | Automatic matrix lookup by compute capability |
-| **Virtual Environment** | Activation-based (error-prone) | Direct invocation with absolute paths (safe) |
-| **Git Installation** | Curl-based (fragile) | Windows native: winget first, then fallback |
-| **Disk Space Check** | None | Warns if <50 GB free (model weights are big) |
-| **Logging** | Stdout only | Transcript + pip logs in `%INSTALL_DIR%/logs/` |
-| **Recovery Options** | Delete and restart | Launch menu: Update, Repair, or Exit |
-| **Attention Methods** | Aggressive cascade (noisy output) | Probed once, built into startup args |
-| **Performance Tools** | All optional, mixed success | Strategic: Triton + SageAttention only |
-| **First-Run UX** | No handholding | Welcome screen, UAC notices, inline help |
+- **Virtual environment activation** was a mess. Batch's `call activate.bat` sets environment variables in a subprocess, which often didn't persist or got lost mid-script. This caused "Python not found" errors that went away on the second run.
+- **PATH management** was a constant struggle. Batch has no good way to merge environment variables; we kept resorting to timeouts and crossed fingers.
+- **Error recovery was invisible.** When something failed silently (like an old Triton version), the script would cascade through half a dozen fallback methods, printing confusing messages and leaving you wondering what actually happened.
+- **Triton detection was brittle.** We checked for a symbol (`AttrsDescriptor`) that got *removed* in newer Triton versions — so correct installs would fail the check and downgrade themselves.
+- **GPU detection worked, but GPU version matching was hardcoded.** Adding support for a new RTX 50-series meant scattered changes in three different places.
 
-#### Key Technical Improvements
+### What v2 Does Differently
 
-- **Polyglot Design:** Batch launcher extracts and runs embedded PowerShell. Never re-executed after the first line. Safe to modify.
-- **GPU Matrix:** A single data structure lists torch/cuda/triton/wheel versions. Add a row when new GPU generations ship; no cascading changes elsewhere.
-- **Immediate Venv Access:** Python/pip calls use absolute venv paths (`$VenvDir\Scripts\python.exe`) instead of activation. Eliminates the biggest class of state-related bugs.
-- **Live Pip Progress:** Tracks downloads and resolves in real time without blocking for 10+ minutes.
-- **Comprehensive Logging:** Full transcript + per-run pip logs. Failures show the tail of relevant logs inline, plus paths to full logs.
-- **Zero AttrsDescriptor Checks:** That symbol was removed in Triton 3.1+. Older code that tests for it triggers false negatives and downgrades working installs.
-- **Proper Exception Handling:** PowerShell's `try/finally` and `$ErrorActionPreference` are used correctly. Native commands go through `Invoke-Native` which respects exit codes.
+v2 is a **polyglot batch/PowerShell hybrid**: the file is named `.bat` so Windows runs it with cmd.exe, but the batch part is tiny — just a launcher that extracts and executes PowerShell code embedded in the same file.
 
----
+**Why PowerShell?**
 
-### v1 (Legacy / Archive)
+- PowerShell is guaranteed on Windows 10/11. No external dependencies.
+- It has real exception handling (`try/finally`), proper object data structures, and native command invocation that respects exit codes.
+- It can manage paths, downloads, and environment variables *reliably.*
 
-The original batch-only installer. Functional but prone to:
-- Virtual environment activation edge cases
-- Path refresh issues
-- Cryptic Triton state problems
-- Silent cascading fallbacks that mask issues
+**The actual improvements:**
 
-**When to use v1:**
-- You're on a system that can't run PowerShell.
-- You prefer pure batch code without external engines.
+1. **No activation state guessing:** After creating the venv, v2 just calls `$VenvDir\Scripts\python.exe` directly with absolute paths. No `activate.bat`, no subprocess environment variables, no mysteries.
 
-**Status:** Archived in the `Archive/` folder for reference. Bug fixes will not be backported.
+2. **GPU matrix:** A single data structure at the top of the script maps GPU compute capability → PyTorch version, CUDA tag, Triton version, and SageAttention wheel URL. When new GPUs ship, you add one row. That's it. No scattered hardcoding.
 
----
+3. **Live pip progress:** When downloading 2–3 GB of PyTorch, the old script printed nothing for 10+ minutes. v2 shows real-time progress: package name, download %, bytes downloaded, ETA. You can actually see that it's not hung.
 
-## Requirements
+4. **Comprehensive logging:** Every run saves a full PowerShell transcript (`wan2gp-YYYYMMDD-HHMMSS.log`) and separate pip logs. When something fails, the script prints the last 30 lines of the relevant log inline, plus a path to the full logs. You don't have to guess where to look.
 
-- **Windows 10/11** (64-bit)
-- **NVIDIA GPU** with CUDA support (RTX 20-series or newer; RTX 50-series fully supported)
-- **Up-to-date NVIDIA drivers**
-- **50 GB+ free disk space** (for model weights)
-- **Stable internet connection**
+5. **Triton fixed.** We removed the brittle `AttrsDescriptor` check (that symbol no longer exists). Instead, we just try to import `triton`. If it works, we use `--compile`. If not, no big deal — the app runs fine without it.
+
+6. **Smart recovery options:** Instead of "delete everything and start over," v2 offers a menu when you run it again:
+   - Launch (default)
+   - Update (git pull + refresh dependencies)
+   - Repair (rebuild the venv, keep your model weights)
+   - Exit
+
+7. **Better UX:** A welcome screen explains what's about to happen. If Windows needs to elevate (for Git or Python), the script warns you *before* the UAC prompt appears, so you know to look in the taskbar for a minimized dialog.
+
+### v1 Still Works
+
+v1 is archived in the `Archive/` folder and will work in most cases. But we're not fixing bugs in it anymore. If you run into the activation or PATH issues, the solution is to use v2.
 
 ---
 
@@ -87,6 +72,16 @@ The original batch-only installer. Functional but prone to:
   - `2` → Update (git pull + refresh dependencies)
   - `3` → Repair (rebuild the venv)
   - `4` → Exit
+
+---
+
+## Requirements
+
+- **Windows 10/11** (64-bit)
+- **NVIDIA GPU** with CUDA support (RTX 20-series or newer; RTX 50-series fully supported)
+- **Up-to-date NVIDIA drivers**
+- **50 GB+ free disk space** (for model weights)
+- **Stable internet connection**
 
 ---
 
