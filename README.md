@@ -8,14 +8,15 @@ An automated setup script to install and run [Wan2GP](https://github.com/deepbee
 
 ## ⚡ Quick Start (Recommended)
 
-1. **Download:** Grab the latest `Wan2GP_OneClick_Installer_v2.bat` from this repository.
+1. **Download:** Grab the latest `Wan2GP_OneClick_Installer_v2.bat` from this repository (or download the `.zip` archive from [Releases](https://github.com/TechMitten/Wan2GP-One-Click-Script/releases) and extract it).
 2. **Run:** Double-click the `.bat` file (no admin rights needed to start).
 3. **Follow the On-Screen Prompts:**
-* Keep an eye on your taskbar—if Git or Python needs to install, Windows will ask for permission (UAC prompt).
-* A live progress bar will show the status while downloading PyTorch and dependencies.
+   * Keep an eye on your taskbar—if Git or Python needs to install, Windows will ask for permission (UAC prompt).
+   * A live progress bar will track your download status for PyTorch and other dependencies.
+4. **Create:** Once setup completes, Wan2GP opens automatically in your browser at `http://localhost:7860`.
 
-
-4. **Create:** Once setup completes, Wan2GP will open automatically in your browser at `http://localhost:7860`.
+> **🛡️ Note on Windows Security / SmartScreen:**  
+> Because this is a downloadable script, Windows may show a blue popup stating *"Windows protected your PC"*. Click **More info** → **Run anyway** to continue. If the file refuses to open, right-click the `.bat` file, select **Properties**, check **Unblock** at the bottom, and click **Apply**.
 
 > **Re-opening the app later:** Double-click the `.bat` file anytime. A menu will appear with options to **Launch**, **Update**, or **Repair** your setup.
 
@@ -24,8 +25,8 @@ An automated setup script to install and run [Wan2GP](https://github.com/deepbee
 ## 💻 System Requirements
 
 | Component | Minimum Requirement | Notes |
-| --- | --- | --- |
-| **Operating System** | Windows 10 / 11 (64-bit) |  |
+| :--- | :--- | :--- |
+| **Operating System** | Windows 10 / 11 (64-bit) | |
 | **Graphics Card (GPU)** | NVIDIA RTX 20-series or newer | RTX 30, 40, and 50-series fully supported |
 | **Drivers** | Latest NVIDIA Drivers | [Download from NVIDIA](https://nvidia.com/drivers) |
 | **Storage** | 50 GB+ free disk space | Required for AI video model weights |
@@ -46,26 +47,46 @@ You do not need to install Python, Git, or CUDA libraries beforehand. The script
 
 ## 🛠️ Common Fixes & Troubleshooting
 
+<details>
+<summary><b>❌ "No NVIDIA GPU detected" or Driver Errors</b></summary>
+
 * Ensure you have an NVIDIA card installed (AMD and Intel GPUs are not supported).
 * Update your GPU drivers from [nvidia.com/drivers](https://nvidia.com/drivers), reboot your PC, and launch the installer again.
+</details>
+
+<details>
+<summary><b>🛡️ Installer Hangs during Git/Python Setup</b></summary>
 
 * Check your Windows taskbar for a **flashing blue-and-yellow shield icon**.
 * Windows often opens permission (UAC) prompts minimized in the background. Click it and select **Yes** to continue.
+</details>
+
+<details>
+<summary><b>🌐 Port 7860 Already in Use</b></summary>
 
 * An instance of Wan2GP (or another local tool like Stable Diffusion) is already running.
 * Close existing browser and terminal windows, or terminate background Python processes in Task Manager.
+</details>
+
+<details>
+<summary><b>⚠️ Package ABI Mismatch (WinError 127)</b></summary>
 
 * Run the `.bat` file again and choose **Option 3: Repair**. This rebuilds your virtual environment cleanly without deleting your downloaded model weights.
+</details>
+
+<details>
+<summary><b>📁 Where are files and error logs stored?</b></summary>
 
 Everything installs to your user folder:
-
 * **App files:** `%USERPROFILE%\Wan2GP\`
 * **Error & Run Logs:** `%USERPROFILE%\Wan2GP\logs\`
 * **To completely uninstall:** Delete the `%USERPROFILE%\Wan2GP\` folder.
+</details>
 
 ---
 
-## 🔧 Technical Details & Customization (For Advanced Users)
+## 🔧 Technical Details & Customization
+
 
 ### Architecture (v2 Hybrid)
 
@@ -110,3 +131,5 @@ $MinFreeGB = 100           # Change minimum disk space check
 
 * **Installer:** Released under the [MIT License](https://github.com/TechMitten/Wan2GP-One-Click-Script/blob/main/LICENSE).
 * **Core Application:** See the original [Wan2GP Repository](https://github.com/deepbeepmeep/Wan2GP) for upstream model licenses and codebase documentation.
+
+```
